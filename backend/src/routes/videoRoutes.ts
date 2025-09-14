@@ -20,4 +20,7 @@ router.post('/:id/thumbnail', videoController.generateThumbnail);
 router.post('/thumbnails/generate-all', videoController.generateAllThumbnails);
 router.put('/:id/metadata', videoController.updateVideoMetadata);
 
+// Ruta para rescanear videos
+router.post('/rescan', videoController.rescanVideos);
+
 export default router;

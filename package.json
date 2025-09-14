@@ -1,0 +1,30 @@
+{
+  "name": "PoochyFlix",
+  "version": "1.0.0",
+  "description": "Aplicación de streaming de contenido multimedia",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "install-all": "npm run install-backend && npm run install-frontend",
+    "start-backend": "cd backend && npm start",
+    "start-frontend": "cd frontend && npm start",
+    "dev-backend": "cd backend && npm run dev",
+    "dev-frontend": "cd frontend && npm start",
+    "dev": "concurrently \"npm run dev-backend\" \"npm run dev-frontend\"",
+    "build": "cd frontend && npm run build",
+    "test": "cd frontend && npm test"
+  },
+  "keywords": [
+    "PoochyFlix",
+    "streaming",
+    "multimedia",
+    "react",
+    "nodejs",
+    "video"
+  ],
+  "author": "Poochy",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

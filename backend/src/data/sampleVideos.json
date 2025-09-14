@@ -1,0 +1,45 @@
+{
+  "videos": [
+    {
+      "id": 1,
+      "title": "Video de Ejemplo 1",
+      "filename": "sample1.mp4",
+      "size": 52428800,
+      "duration": 120,
+      "thumbnail": null,
+      "uploadDate": "2024-01-15T10:30:00.000Z",
+      "path": "/videos/sample1.mp4",
+      "description": "Un video de ejemplo para demostrar la funcionalidad",
+      "category": "demo",
+      "tags": ["ejemplo", "demo", "test"]
+    },
+    {
+      "id": 2,
+      "title": "Tutorial de Programación",
+      "filename": "tutorial.mp4",
+      "size": 104857600,
+      "duration": 300,
+      "thumbnail": null,
+      "uploadDate": "2024-01-16T14:20:00.000Z",
+      "path": "/videos/tutorial.mp4",
+      "description": "Tutorial básico de programación en TypeScript",
+      "category": "tutorial",
+      "tags": ["programación", "typescript", "tutorial"]
+    },
+    {
+      "id": 3,
+      "title": "Documental de Naturaleza",
+      "filename": "nature.mp4",
+      "size": 209715200,
+      "duration": 1800,
+      "thumbnail": null,
+      "uploadDate": "2024-01-17T09:15:00.000Z",
+      "path": "/videos/nature.mp4",
+      "description": "Documental sobre la vida salvaje",
+      "category": "documentary",
+      "tags": ["naturaleza", "documental", "vida salvaje"]
+    }
+  ],
+  "lastUpdated": "2024-01-17T09:15:00.000Z",
+  "version": "1.0.0"
+}

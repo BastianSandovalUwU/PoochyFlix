@@ -1,174 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { FaImage } from 'react-icons/fa';
 import VideoCard from '../components/VideoCard';
 import { videoAPI } from '../services/api';
 import { Video } from '../types';
 
-const Container = styled.div`
-  padding-top: 80px;
-  min-height: 100vh;
-`;
-
-const Hero = styled.section`
-  position: relative;
-  height: 70vh;
-  background: linear-gradient(45deg, #141414, #333);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-`;
-
-const HeroContent = styled.div`
-  text-align: center;
-  z-index: 2;
-  max-width: 800px;
-  padding: 0 20px;
-`;
-
-const HeroTitle = styled.h1`
-  font-size: 4rem;
-  font-weight: 900;
-  margin-bottom: 20px;
-  background: linear-gradient(45deg, #e50914, #f40612);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 1.5rem;
-  color: #b3b3b3;
-  margin-bottom: 30px;
-
-  @media (max-width: 768px) {
-    font-size: 1.2rem;
-  }
-`;
-
-const CTAButton = styled.button`
-  background: #e50914;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background: #f40612;
-  }
-
-  &:disabled {
-    background: #666;
-    cursor: not-allowed;
-  }
-`;
-
-const ThumbnailButton = styled.button`
-  background: #333;
-  color: white;
-  border: 1px solid #555;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background: #444;
-  }
-
-  &:disabled {
-    background: #666;
-    cursor: not-allowed;
-  }
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const Content = styled.section`
-  padding: 40px 4%;
-`;
-
-const Section = styled.div`
-  margin-bottom: 40px;
-`;
-
-const SectionTitle = styled.h2`
-  color: #ffffff;
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 20px;
-`;
-
-const VideoGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-  }
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: #b3b3b3;
-  font-size: 18px;
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: #e50914;
-  font-size: 18px;
-  text-align: center;
-  padding: 20px;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: #b3b3b3;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 64px;
-  margin-bottom: 20px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: #ffffff;
-`;
-
-const EmptyText = styled.p`
-  font-size: 16px;
-  margin-bottom: 30px;
-`;
 
 const Home: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -213,92 +48,108 @@ const Home: React.FC = () => {
 
   const renderVideos = () => {
     if (loading) {
-      return <LoadingContainer>Cargando videos...</LoadingContainer>;
+      return (
+        <div className="flex justify-center items-center h-48 text-netflix-light-gray text-lg">
+          Cargando videos...
+        </div>
+      );
     }
 
     if (error) {
       return (
-        <ErrorContainer>
+        <div className="flex justify-center items-center h-48 text-netflix-red text-lg text-center p-5">
           <div>
             <p>{error}</p>
-            <CTAButton onClick={fetchVideos} style={{ marginTop: '20px' }}>
+            <button 
+              onClick={fetchVideos} 
+              className="mt-5 bg-netflix-red hover:bg-netflix-red-hover text-white border-none rounded px-6 py-3 text-base font-semibold cursor-pointer transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            >
               Reintentar
-            </CTAButton>
+            </button>
           </div>
-        </ErrorContainer>
+        </div>
       );
     }
 
     if (videos.length === 0) {
       return (
-        <EmptyState>
-          <EmptyIcon>🎬</EmptyIcon>
-          <EmptyTitle>No hay videos disponibles</EmptyTitle>
-          <EmptyText>
+        <div className="text-center py-15 px-5 text-netflix-light-gray">
+          <div className="text-6xl mb-5">🎬</div>
+          <h3 className="text-2xl mb-2.5 text-white">No hay videos disponibles</h3>
+          <p className="text-base mb-7.5">
             Sube tu primer video para comenzar a disfrutar del streaming
-          </EmptyText>
-          <CTAButton onClick={() => window.location.href = '/upload'}>
+          </p>
+          <button 
+            onClick={() => window.location.href = '/upload'}
+            className="bg-netflix-red hover:bg-netflix-red-hover text-white border-none rounded px-6 py-3 text-base font-semibold cursor-pointer transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+          >
             Subir Video
-          </CTAButton>
-        </EmptyState>
+          </button>
+        </div>
       );
     }
 
     return (
       <>
-        <HeaderActions>
-          <ThumbnailButton 
+        <div className="flex gap-4 items-center mb-5">
+          <button 
             onClick={generateAllThumbnails}
             disabled={generatingThumbnails}
+            className="bg-netflix-gray hover:bg-gray-600 text-white border border-gray-600 px-4 py-2 text-sm rounded cursor-pointer flex items-center gap-2 transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             <FaImage />
             {generatingThumbnails ? 'Generando...' : 'Generar Thumbnails'}
-          </ThumbnailButton>
-        </HeaderActions>
-        <VideoGrid>
+          </button>
+        </div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] md:gap-4">
           {videos.map((video) => (
             <VideoCard key={video.id} video={video} />
           ))}
-        </VideoGrid>
+        </div>
       </>
     );
   };
 
   return (
-    <Container>
-      <Hero>
-        <HeroContent>
-          <HeroTitle>PoochyFlix</HeroTitle>
-          <HeroSubtitle>
+    <div className="pt-20 min-h-screen">
+      <section className="relative h-[70vh] bg-gradient-to-br from-netflix-dark to-netflix-gray flex items-center justify-center overflow-hidden">
+        <div className="text-center z-10 max-w-4xl px-5">
+          <h1 className="text-6xl md:text-4xl font-black mb-5 bg-gradient-to-r from-netflix-red to-netflix-red-hover bg-clip-text text-transparent">
+            PoochyFlix
+          </h1>
+          <p className="text-2xl md:text-xl text-netflix-light-gray mb-7.5">
             Disfruta de tu contenido multimedia personalizado
-          </HeroSubtitle>
-          <CTAButton onClick={() => window.location.href = '/upload'}>
+          </p>
+          <button 
+            onClick={() => window.location.href = '/upload'}
+            className="bg-netflix-red hover:bg-netflix-red-hover text-white border-none rounded px-6 py-3 text-base font-semibold cursor-pointer transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+          >
             Subir Contenido
-          </CTAButton>
-        </HeroContent>
-      </Hero>
+          </button>
+        </div>
+      </section>
 
-      <Content>
-        <Section>
-          <SectionTitle>Mis Videos</SectionTitle>
+      <section className="py-10 px-[4%]">
+        <div className="mb-10">
+          <h2 className="text-white text-2xl font-semibold mb-5">Mis Videos</h2>
           {renderVideos()}
-        </Section>
+        </div>
 
         {videos.length > 0 && (
-          <Section>
-            <SectionTitle>Recientes</SectionTitle>
-            <VideoGrid>
+          <div className="mb-10">
+            <h2 className="text-white text-2xl font-semibold mb-5">Recientes</h2>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 md:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] md:gap-4">
               {videos
                 .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())
                 .slice(0, 6)
                 .map((video) => (
                   <VideoCard key={`recent-${video.id}`} video={video} />
                 ))}
-            </VideoGrid>
-          </Section>
+            </div>
+          </div>
         )}
-      </Content>
-    </Container>
+      </section>
+    </div>
   );
 }
 

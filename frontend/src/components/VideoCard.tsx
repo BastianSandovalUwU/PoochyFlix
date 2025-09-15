@@ -1,146 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import { FaPlay, FaInfoCircle, FaImage } from 'react-icons/fa';
 import { streamAPI, videoAPI } from '../services/api';
 import { VideoCardProps } from '../types';
 
-const Card = styled.div`
-  position: relative;
-  width: 300px;
-  height: 168px;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background: #333;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-  }
-
-  @media (max-width: 768px) {
-    width: 250px;
-    height: 140px;
-  }
-`;
-
-interface ThumbnailProps {
-  thumbnail: string | null;
-}
-
-const Thumbnail = styled.div<ThumbnailProps>`
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, #333, #555);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  color: #666;
-  background-image: ${props => props.thumbnail ? `url(${props.thumbnail})` : 'none'};
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-`;
-
-const Overlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-
-  ${Card}:hover & {
-    opacity: 1;
-  }
-`;
-
-const ActionButton = styled.button`
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-
-  &.info {
-    background: rgba(109, 109, 110, 0.7);
-    color: white;
-  }
-`;
-
-const VideoInfo = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  padding: 20px 16px 16px;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-
-  ${Card}:hover & {
-    transform: translateY(0);
-  }
-`;
-
-const Title = styled.h3`
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const Metadata = styled.div`
-  color: #b3b3b3;
-  font-size: 12px;
-  display: flex;
-  gap: 12px;
-`;
-
-const PlayIcon = styled.div`
-    font-size: 24px;
-    color: #e50914;
-`;
-
-const PlaceholderThumbnail = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, #333, #555);
-    color: white;
-`;
-
-const PlaceholderText = styled.div`
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 8px;
-    color: white;
-`;
 
 const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   const navigate = useNavigate();
@@ -196,49 +59,61 @@ const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   };
 
   return (
-    <Card onClick={handlePlay}>
-      <Thumbnail 
-        thumbnail={
+    <div 
+      onClick={handlePlay}
+      className="relative w-80 h-44 md:w-64 md:h-36 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 bg-netflix-gray hover:scale-105 hover:shadow-2xl hover:shadow-black/50 hover:z-10"
+    >
+      <div 
+        className={`w-full h-full bg-gradient-to-br from-netflix-gray to-gray-600 flex items-center justify-center text-5xl text-gray-500 bg-cover bg-center bg-no-repeat ${
           video.thumbnail && !thumbnailError 
-            ? streamAPI.getThumbnailUrl(video.thumbnail) 
-            : null
-        }
+            ? 'bg-[url(' + streamAPI.getThumbnailUrl(video.thumbnail) + ')]' 
+            : ''
+        }`}
         onError={() => setThumbnailError(true)}
       >
         {(!video.thumbnail || thumbnailError) && (
-          <PlaceholderThumbnail>
-            <PlayIcon>🎬</PlayIcon>
-            <PlaceholderText>VIDEO</PlaceholderText>
-          </PlaceholderThumbnail>
+          <div className="flex flex-col items-center justify-center w-full h-full bg-gradient-to-br from-netflix-gray to-gray-600 text-white">
+            <div className="text-2xl text-netflix-red">🎬</div>
+            <div className="text-base font-semibold mt-2 text-white">VIDEO</div>
+          </div>
         )}
-      </Thumbnail>
+      </div>
 
-      <Overlay>
-        <ActionButton onClick={handlePlay}>
+      <div className="absolute inset-0 bg-black/70 flex items-center justify-center gap-5 opacity-0 hover:opacity-100 transition-opacity duration-300">
+        <button 
+          onClick={handlePlay}
+          className="bg-white/90 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
+        >
           <FaPlay color="#000" />
-        </ActionButton>
+        </button>
         {!video.thumbnail && (
-          <ActionButton 
+          <button 
             onClick={handleGenerateThumbnail}
             disabled={generatingThumbnail}
             title="Generar thumbnail"
+            className="bg-white/90 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 disabled:opacity-50"
           >
             {generatingThumbnail ? '⏳' : <FaImage color="#000" />}
-          </ActionButton>
+          </button>
         )}
-        <ActionButton className="info" onClick={handleInfo}>
+        <button 
+          onClick={handleInfo}
+          className="bg-gray-600/70 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 text-white"
+        >
           <FaInfoCircle />
-        </ActionButton>
-      </Overlay>
+        </button>
+      </div>
 
-      <VideoInfo>
-        <Title>{video.title}</Title>
-        <Metadata>
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-5 pb-4 transform translate-y-full hover:translate-y-0 transition-transform duration-300">
+        <h3 className="text-white text-base font-semibold mb-1 truncate">
+          {video.title}
+        </h3>
+        <div className="text-netflix-light-gray text-xs flex gap-3">
           <span>{formatFileSize(video.size)}</span>
           <span>{formatDate(video.uploadDate)}</span>
-        </Metadata>
-      </VideoInfo>
-    </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,198 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import ReactPlayer from 'react-player';
-import { FaArrowLeft, FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaPause, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress } from 'react-icons/fa';
 import { videoAPI, streamAPI } from '../services/api';
 import { Video } from '../types';
 
-const Container = styled.div`
-  min-height: 100vh;
-  background-color: #000000;
-`;
-
-const Header = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 68px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.7) 10%, transparent);
-  display: flex;
-  align-items: center;
-  padding: 0 4%;
-  z-index: 1000;
-`;
-
-const BackButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: #b3b3b3;
-  }
-`;
-
-const VideoContainer = styled.div`
-  width: 100%;
-  height: 100vh;
-  position: relative;
-  background-color: #000000;
-`;
-
-const PlayerWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-`;
-
-interface ControlsOverlayProps {
-  visible: boolean;
-}
-
-const ControlsOverlay = styled.div<ControlsOverlayProps>`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  padding: 40px 4%;
-  z-index: 100;
-  opacity: ${props => props.visible ? '1' : '0'};
-  transition: opacity 0.3s ease;
-`;
-
-const VideoInfo = styled.div`
-  margin-bottom: 20px;
-`;
-
-const VideoTitle = styled.h1`
-  color: #ffffff;
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 10px;
-
-  @media (max-width: 768px) {
-    font-size: 24px;
-  }
-`;
-
-const VideoMetadata = styled.div`
-  color: #b3b3b3;
-  font-size: 16px;
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-`;
-
-const Controls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const ControlButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  color: #ffffff;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-`;
-
-const ProgressContainer = styled.div`
-  flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
-`;
-
-interface ProgressProps {
-  percent: number;
-}
-
-const Progress = styled.div<ProgressProps>`
-  height: 100%;
-  background: #e50914;
-  border-radius: 3px;
-  width: ${props => props.percent}%;
-  transition: width 0.1s ease;
-`;
-
-const TimeDisplay = styled.div`
-  color: #ffffff;
-  font-size: 14px;
-  min-width: 80px;
-  text-align: center;
-`;
-
-const VolumeContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const VolumeSlider = styled.input`
-  width: 80px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-
-  &::-webkit-slider-thumb {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #e50914;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  color: #ffffff;
-  font-size: 18px;
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  color: #e50914;
-  font-size: 18px;
-  text-align: center;
-  padding: 20px;
-`;
 
 const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const playerRef = useRef<ReactPlayer>(null);
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,6 +20,7 @@ const VideoPlayer: React.FC = () => {
   const [played, setPlayed] = useState<number>(0);
   const [seeking, setSeeking] = useState<boolean>(false);
   const [controlsVisible, setControlsVisible] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const fetchVideo = useCallback(async (): Promise<void> => {
     if (!id) return;
@@ -239,6 +57,17 @@ const VideoPlayer: React.FC = () => {
     return () => clearTimeout(timer);
   }, [playing]);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const handlePlayPause = (): void => {
     setPlaying(!playing);
   };
@@ -263,6 +92,11 @@ const VideoPlayer: React.FC = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pos = (e.clientX - rect.left) / rect.width;
     setPlayed(pos);
+    
+    // Si el reproductor está disponible, hacer seek inmediatamente
+    if (playerRef.current) {
+      playerRef.current.seekTo(pos);
+    }
   };
 
   const handleSeekMouseDown = (): void => {
@@ -292,41 +126,70 @@ const VideoPlayer: React.FC = () => {
     setControlsVisible(true);
   };
 
+  const handleScreenClick = (): void => {
+    setPlaying(!playing);
+  };
+
+  const toggleFullscreen = (): void => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch((err) => {
+        console.error('Error entering fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      }).catch((err) => {
+        console.error('Error exiting fullscreen:', err);
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <Container>
-        <LoadingContainer>Cargando video...</LoadingContainer>
-      </Container>
+      <div className="min-h-screen bg-black">
+        <div className="flex justify-center items-center h-screen text-white text-lg">
+          Cargando video...
+        </div>
+      </div>
     );
   }
 
   if (error || !video) {
     return (
-      <Container>
-        <ErrorContainer>
+      <div className="min-h-screen bg-black">
+        <div className="flex flex-col justify-center items-center h-screen text-netflix-red text-lg text-center p-5">
           <h2>Error</h2>
           <p>{error || 'Video no encontrado'}</p>
-          <BackButton onClick={() => navigate('/')}>
+          <button 
+            onClick={() => navigate('/')}
+            className="bg-transparent border-none text-white cursor-pointer p-2 flex items-center gap-2 text-base hover:text-netflix-light-gray transition-colors duration-300"
+          >
             <FaArrowLeft />
             Volver al inicio
-          </BackButton>
-        </ErrorContainer>
-      </Container>
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <BackButton onClick={() => navigate('/')}>
+    <div className="min-h-screen bg-black">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/70 to-transparent flex items-center px-[4%] z-50">
+        <button 
+          onClick={() => navigate('/')}
+          className="bg-transparent border-none text-white cursor-pointer p-2 flex items-center gap-2 text-base hover:text-netflix-light-gray transition-colors duration-300"
+        >
           <FaArrowLeft />
           Volver
-        </BackButton>
-      </Header>
+        </button>
+      </div>
 
-      <VideoContainer onMouseMove={handleMouseMove}>
-        <PlayerWrapper>
+      <div className="w-full h-screen relative bg-black" onMouseMove={handleMouseMove} onClick={handleScreenClick}>
+        <div className="relative w-full h-full">
           <ReactPlayer
+            ref={playerRef}
             url={streamAPI.getStreamUrl(video.filename)}
             width="100%"
             height="100%"
@@ -350,51 +213,115 @@ const VideoPlayer: React.FC = () => {
               },
             }}
           />
-        </PlayerWrapper>
+          
+          {/* Icono de pausa en el centro de la pantalla */}
+          {!playing && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div 
+                className="bg-black/50 rounded-full p-6 backdrop-blur-sm cursor-pointer hover:bg-black/60 transition-colors duration-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPlaying(true);
+                }}
+              >
+                <FaPlay className="text-white text-6xl opacity-80" />
+              </div>
+            </div>
+          )}
+        </div>
 
-        <ControlsOverlay visible={controlsVisible}>
-          <VideoInfo>
-            <VideoTitle>{video.title}</VideoTitle>
-            <VideoMetadata>
+        <div 
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-10 px-[4%] z-40 transition-opacity duration-300 ${
+            controlsVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-5">
+            <h1 className="text-white text-3xl md:text-2xl font-bold mb-2.5">
+              {video.title}
+            </h1>
+            <div className="text-netflix-light-gray text-base flex gap-5 flex-wrap">
               <span>Subido: {new Date(video.uploadDate).toLocaleDateString('es-ES')}</span>
               <span>Tamaño: {(video.size / (1024 * 1024)).toFixed(1)} MB</span>
-            </VideoMetadata>
-          </VideoInfo>
+            </div>
+          </div>
 
-          <Controls>
-            <ControlButton onClick={handlePlayPause}>
+          <div className="flex items-center gap-5">
+            <button 
+              onClick={handlePlayPause}
+              className="bg-white/20 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors duration-300 text-white"
+            >
               {playing ? <FaPause /> : <FaPlay />}
-            </ControlButton>
+            </button>
 
-            <ProgressContainer
-              onClick={handleSeekChange}
+            <div
+              className="flex-1 h-1.5 bg-white/30 rounded cursor-pointer relative"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSeekChange(e);
+              }}
               onMouseDown={handleSeekMouseDown}
               onMouseUp={handleSeekMouseUp}
+              onMouseMove={(e) => {
+                if (seeking) {
+                  handleSeekChange(e);
+                }
+              }}
             >
-              <Progress percent={played * 100} />
-            </ProgressContainer>
-
-            <TimeDisplay>
-              {formatTime(duration * played)} / {formatTime(duration)}
-            </TimeDisplay>
-
-            <VolumeContainer>
-              <ControlButton onClick={handleMute}>
-                {muted ? <FaVolumeMute /> : <FaVolumeUp />}
-              </ControlButton>
-              <VolumeSlider
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={muted ? 0 : volume}
-                onChange={handleVolumeChange}
+              <div 
+                className="h-full bg-netflix-red rounded transition-all duration-100"
+                style={{ width: `${played * 100}%` }}
               />
-            </VolumeContainer>
-          </Controls>
-        </ControlsOverlay>
-      </VideoContainer>
-    </Container>
+              <div 
+                className="absolute top-1/2 transform -translate-y-1/2 w-4 h-4 bg-netflix-red rounded-full cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+                style={{ left: `${played * 100}%`, marginLeft: '-8px' }}
+              />
+            </div>
+
+            <div className="text-white text-sm min-w-20 text-center">
+              {formatTime(duration * played)} / {formatTime(duration)}
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMute();
+                }}
+                className="bg-white/20 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors duration-300 text-white"
+              >
+                {muted ? <FaVolumeMute /> : <FaVolumeUp />}
+              </button>
+              <div className="relative w-20 h-1 bg-white/30 rounded cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                <div 
+                  className="h-full bg-netflix-red rounded transition-all duration-100"
+                  style={{ width: `${(muted ? 0 : volume) * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={muted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                className="bg-white/20 border-none rounded-full w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors duration-300 text-white"
+                title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+              >
+                {isFullscreen ? <FaCompress /> : <FaExpand />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

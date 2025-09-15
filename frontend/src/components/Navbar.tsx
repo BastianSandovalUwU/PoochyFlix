@@ -1,146 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 import { FaPlay, FaPlus, FaSearch, FaBars } from 'react-icons/fa';
 
-const Nav = styled.nav`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 68px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.7) 10%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 4%;
-  z-index: 1000;
-  transition: background-color 0.3s ease;
-
-  &.scrolled {
-    background-color: rgba(0, 0, 0, 0.9);
-  }
-`;
-
-const Logo = styled(Link)`
-  color: #e50914;
-  font-size: 24px;
-  font-weight: 700;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    color: #f40612;
-  }
-`;
-
-const NavItems = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  list-style: none;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const NavItem = styled(Link)`
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 400;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: #b3b3b3;
-  }
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-interface SearchInputProps {
-  expanded: boolean;
-}
-
-const SearchInput = styled.input<SearchInputProps>`
-  background: transparent;
-  border: 1px solid #ffffff;
-  border-radius: 4px;
-  color: #ffffff;
-  padding: 8px 12px;
-  width: ${props => props.expanded ? '200px' : '0'};
-  opacity: ${props => props.expanded ? '1' : '0'};
-  transition: all 0.3s ease;
-
-  &::placeholder {
-    color: #b3b3b3;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #ffffff;
-  }
-`;
-
-const SearchButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    color: #b3b3b3;
-  }
-`;
-
-const UploadButton = styled(Link)`
-  background: #e50914;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background: #f40612;
-  }
-`;
-
-const MobileMenuButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 8px;
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-  }
-`;
 
 const Navbar: React.FC = () => {
   const [searchExpanded, setSearchExpanded] = useState<boolean>(false);
@@ -150,40 +11,64 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <Nav id="navbar">
-      <Logo to="/">
+    <nav 
+      id="navbar"
+      className="fixed top-0 left-0 right-0 h-17 bg-gradient-to-b from-black/70 to-transparent flex items-center justify-between px-[4%] z-50 transition-colors duration-300"
+    >
+      <Link 
+        to="/"
+        className="text-netflix-red text-2xl font-bold no-underline flex items-center gap-2 hover:text-netflix-red-hover transition-colors duration-300"
+      >
         <FaPlay />
         PoochyFlix
-      </Logo>
+      </Link>
 
-      <NavItems>
-        <NavItem to="/">Inicio</NavItem>
-        <NavItem to="/upload">Subir Video</NavItem>
-      </NavItems>
+      <div className="hidden md:flex items-center gap-5">
+        <Link 
+          to="/"
+          className="text-white no-underline text-sm font-normal hover:text-netflix-light-gray transition-colors duration-300"
+        >
+          Inicio
+        </Link>
+        <Link 
+          to="/upload"
+          className="text-white no-underline text-sm font-normal hover:text-netflix-light-gray transition-colors duration-300"
+        >
+          Subir Video
+        </Link>
+      </div>
 
-      <RightSection>
-        <SearchContainer>
-          <SearchInput
+      <div className="flex items-center gap-5">
+        <div className="relative flex items-center">
+          <input
             type="text"
             placeholder="Buscar videos..."
-            expanded={searchExpanded}
+            className={`bg-transparent border border-white rounded text-white px-3 py-2 transition-all duration-300 ${
+              searchExpanded ? 'w-50 opacity-100' : 'w-0 opacity-0'
+            }`}
             onBlur={() => setTimeout(() => setSearchExpanded(false), 200)}
           />
-          <SearchButton onClick={handleSearchToggle}>
+          <button 
+            onClick={handleSearchToggle}
+            className="bg-transparent border-none text-white cursor-pointer p-2 flex items-center justify-center hover:text-netflix-light-gray transition-colors duration-300"
+          >
             <FaSearch />
-          </SearchButton>
-        </SearchContainer>
+          </button>
+        </div>
 
-        <UploadButton to="/upload">
+        <Link 
+          to="/upload"
+          className="bg-netflix-red hover:bg-netflix-red-hover text-white border-none rounded px-4 py-2 no-underline text-sm font-medium flex items-center gap-2 transition-colors duration-300"
+        >
           <FaPlus />
           Subir
-        </UploadButton>
+        </Link>
 
-        <MobileMenuButton>
+        <button className="md:hidden bg-transparent border-none text-white cursor-pointer p-2">
           <FaBars />
-        </MobileMenuButton>
-      </RightSection>
-    </Nav>
+        </button>
+      </div>
+    </nav>
   );
 }
 

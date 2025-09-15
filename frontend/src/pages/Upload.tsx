@@ -1,280 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import { FaUpload, FaFileVideo, FaTimes, FaCheck } from 'react-icons/fa';
 import { videoAPI } from '../services/api';
 import { AlertState } from '../types';
 
-const Container = styled.div`
-  padding: 100px 4% 40px;
-  max-width: 800px;
-  margin: 0 auto;
-  min-height: 100vh;
-`;
-
-const Title = styled.h1`
-  color: #ffffff;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 40px;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-interface UploadCardProps {
-  dragActive: boolean;
-}
-
-const UploadCard = styled.div<UploadCardProps>`
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 40px;
-  border: 2px dashed ${props => props.dragActive ? '#e50914' : '#333'};
-  transition: border-color 0.3s ease;
-  text-align: center;
-`;
-
-const UploadArea = styled.div`
-  cursor: pointer;
-  padding: 40px 20px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: rgba(229, 9, 20, 0.1);
-  }
-`;
-
-interface UploadIconProps {
-  dragActive: boolean;
-}
-
-const UploadIcon = styled.div<UploadIconProps>`
-  font-size: 4rem;
-  color: ${props => props.dragActive ? '#e50914' : '#666'};
-  margin-bottom: 20px;
-  transition: color 0.3s ease;
-`;
-
-const UploadText = styled.p`
-  color: #ffffff;
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-`;
-
-const UploadSubtext = styled.p`
-  color: #b3b3b3;
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-`;
-
-const FileInput = styled.input`
-  display: none;
-`;
-
-const BrowseButton = styled.button`
-  background: #e50914;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: #f40612;
-  }
-`;
-
-const Form = styled.form`
-  margin-top: 40px;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 24px;
-`;
-
-const Label = styled.label`
-  display: block;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 8px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  background: #333;
-  border: 1px solid #555;
-  border-radius: 6px;
-  color: #ffffff;
-  padding: 12px 16px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #e50914;
-  }
-
-  &::placeholder {
-    color: #b3b3b3;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 40px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const Button = styled.button`
-  padding: 12px 32px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 120px;
-  justify-content: center;
-
-  &.primary {
-    background: #e50914;
-    color: #ffffff;
-    border: none;
-
-    &:hover:not(:disabled) {
-      background: #f40612;
-    }
-
-    &:disabled {
-      background: #666;
-      cursor: not-allowed;
-    }
-  }
-
-  &.secondary {
-    background: transparent;
-    color: #ffffff;
-    border: 1px solid #555;
-
-    &:hover {
-      background: #333;
-      border-color: #777;
-    }
-  }
-`;
-
-const ProgressContainer = styled.div`
-  margin-top: 20px;
-`;
-
-const ProgressBar = styled.div`
-  width: 100%;
-  height: 8px;
-  background: #333;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 10px;
-`;
-
-interface ProgressProps {
-  percent: number;
-}
-
-const Progress = styled.div<ProgressProps>`
-  height: 100%;
-  background: #e50914;
-  width: ${props => props.percent}%;
-  transition: width 0.3s ease;
-`;
-
-const ProgressText = styled.p`
-  color: #b3b3b3;
-  font-size: 14px;
-  text-align: center;
-`;
-
-const FileInfo = styled.div`
-  background: #333;
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const FileDetails = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const FileIcon = styled.div`
-  color: #e50914;
-  font-size: 24px;
-`;
-
-const FileName = styled.span`
-  color: #ffffff;
-  font-weight: 500;
-`;
-
-const FileSize = styled.span`
-  color: #b3b3b3;
-  font-size: 14px;
-`;
-
-const RemoveButton = styled.button`
-  background: transparent;
-  border: none;
-  color: #b3b3b3;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: #e50914;
-  }
-`;
-
-const Alert = styled.div`
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  &.success {
-    background: rgba(0, 255, 0, 0.1);
-    border: 1px solid rgba(0, 255, 0, 0.3);
-    color: #00ff00;
-  }
-
-  &.error {
-    background: rgba(255, 0, 0, 0.1);
-    border: 1px solid rgba(255, 0, 0, 0.3);
-    color: #ff0000;
-  }
-`;
 
 const Upload: React.FC = () => {
   const navigate = useNavigate();
@@ -408,113 +137,136 @@ const Upload: React.FC = () => {
   };
 
   return (
-    <Container>
-      <Title>Subir Video</Title>
+    <div className="pt-24 px-[4%] pb-10 max-w-4xl mx-auto min-h-screen">
+      <h1 className="text-white text-4xl md:text-3xl font-bold mb-10 text-center">
+        Subir Video
+      </h1>
 
       {alert && (
-        <Alert className={alert.type}>
+        <div className={`p-4 rounded-lg mb-5 flex items-center gap-3 ${
+          alert.type === 'success' 
+            ? 'bg-green-500/10 border border-green-500/30 text-green-400' 
+            : 'bg-red-500/10 border border-red-500/30 text-red-400'
+        }`}>
           {alert.type === 'success' ? <FaCheck /> : <FaTimes />}
           {alert.message}
-        </Alert>
+        </div>
       )}
 
-      <UploadCard
-        dragActive={dragActive}
+      <div
+        className={`bg-gray-800 rounded-xl p-10 border-2 border-dashed text-center transition-colors duration-300 ${
+          dragActive ? 'border-netflix-red' : 'border-netflix-gray'
+        }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
         {!selectedFile ? (
-          <UploadArea onClick={() => fileInputRef.current?.click()}>
-            <UploadIcon dragActive={dragActive}>
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="cursor-pointer p-10 hover:bg-netflix-red/10 transition-colors duration-300"
+          >
+            <div className={`text-6xl mb-5 transition-colors duration-300 ${
+              dragActive ? 'text-netflix-red' : 'text-gray-500'
+            }`}>
               <FaUpload />
-            </UploadIcon>
-            <UploadText>
+            </div>
+            <p className="text-white text-xl mb-2.5">
               {dragActive ? 'Suelta el archivo aquí' : 'Arrastra tu video aquí'}
-            </UploadText>
-            <UploadSubtext>
+            </p>
+            <p className="text-netflix-light-gray text-sm mb-5">
               o haz clic para seleccionar un archivo
-            </UploadSubtext>
-            <BrowseButton>
+            </p>
+            <button className="bg-netflix-red hover:bg-netflix-red-hover text-white border-none rounded-md px-6 py-3 text-base font-semibold cursor-pointer transition-colors duration-300 inline-flex items-center gap-2">
               <FaFileVideo />
               Seleccionar Archivo
-            </BrowseButton>
-            <UploadSubtext style={{ marginTop: '20px' }}>
+            </button>
+            <p className="text-netflix-light-gray text-sm mt-5">
               Formatos soportados: MP4, AVI, MOV, MKV, WebM (máx. 2GB)
-            </UploadSubtext>
-          </UploadArea>
+            </p>
+          </div>
         ) : (
-          <FileInfo>
-            <FileDetails>
-              <FileIcon>
+          <div className="bg-netflix-gray rounded-lg p-5 mt-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-netflix-red text-2xl">
                 <FaFileVideo />
-              </FileIcon>
-              <div>
-                <FileName>{selectedFile.name}</FileName>
-                <br />
-                <FileSize>{formatFileSize(selectedFile.size)}</FileSize>
               </div>
-            </FileDetails>
-            <RemoveButton onClick={removeFile}>
+              <div>
+                <span className="text-white font-medium">{selectedFile.name}</span>
+                <br />
+                <span className="text-netflix-light-gray text-sm">{formatFileSize(selectedFile.size)}</span>
+              </div>
+            </div>
+            <button 
+              onClick={removeFile}
+              className="bg-transparent border-none text-netflix-light-gray cursor-pointer p-1 rounded hover:text-netflix-red transition-colors duration-300"
+            >
               <FaTimes />
-            </RemoveButton>
-          </FileInfo>
+            </button>
+          </div>
         )}
 
-        <FileInput
+        <input
           ref={fileInputRef}
           type="file"
           accept="video/*"
           onChange={handleInputChange}
+          className="hidden"
         />
-      </UploadCard>
+      </div>
 
       {selectedFile && (
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label htmlFor="title">Título del Video</Label>
-            <Input
+        <form onSubmit={handleSubmit} className="mt-10">
+          <div className="mb-6">
+            <label htmlFor="title" className="block text-white text-base font-medium mb-2">
+              Título del Video
+            </label>
+            <input
               id="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ingresa un título para tu video"
               required
+              className="w-full bg-netflix-gray border border-gray-600 rounded-md text-white px-4 py-3 text-base transition-colors duration-300 focus:outline-none focus:border-netflix-red placeholder:text-netflix-light-gray"
             />
-          </FormGroup>
+          </div>
 
           {uploading && (
-            <ProgressContainer>
-              <ProgressBar>
-                <Progress percent={uploadProgress} />
-              </ProgressBar>
-              <ProgressText>
+            <div className="mt-5">
+              <div className="w-full h-2 bg-netflix-gray rounded-md overflow-hidden mb-2.5">
+                <div 
+                  className="h-full bg-netflix-red transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="text-netflix-light-gray text-sm text-center">
                 Subiendo... {uploadProgress}%
-              </ProgressText>
-            </ProgressContainer>
+              </p>
+            </div>
           )}
 
-          <ButtonGroup>
-            <Button
+          <div className="flex gap-4 justify-center mt-10 md:flex-col">
+            <button
               type="button"
-              className="secondary"
               onClick={() => navigate('/')}
               disabled={uploading}
+              className="px-8 py-3 rounded-md text-base font-semibold cursor-pointer transition-all duration-300 inline-flex items-center gap-2 min-w-32 justify-center bg-transparent text-white border border-gray-600 hover:bg-netflix-gray hover:border-gray-500 disabled:opacity-50"
             >
               Cancelar
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
-              className="primary"
               disabled={uploading || !title.trim()}
+              className="px-8 py-3 rounded-md text-base font-semibold cursor-pointer transition-all duration-300 inline-flex items-center gap-2 min-w-32 justify-center bg-netflix-red text-white border-none hover:bg-netflix-red-hover disabled:bg-gray-600 disabled:cursor-not-allowed"
             >
               {uploading ? 'Subiendo...' : 'Subir Video'}
-            </Button>
-          </ButtonGroup>
-        </Form>
+            </button>
+          </div>
+        </form>
       )}
-    </Container>
+    </div>
   );
 }
 
